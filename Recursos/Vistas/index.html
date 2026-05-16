@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<script>
+if (!localStorage.getItem("session")) {
+    window.location.href = "login.html";
+}
+</script>
+
+<head>
+<meta charset="UTF-8">
+<title>Inventario</title>
+<link rel="stylesheet" href="../Estilos/styles.css">
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+th { cursor: pointer; }
+.paginacion button { margin: 2px; }
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+    <img class="logo" src="../Img/logo.png">
+    <div class="menu">
+        <a href="dashboard.html">INICIO</a>
+        <a href="index.html">REGISTROS</a>
+        <a href="login.html" onclick="logout()">CERRAR SESIÓN</a>
+    </div>
+</div>
+
+<div class="main">
+<div class="card">
+
+<div class="header">
+    <h2 id="titulo"></h2>
+
+    <div>
+        <input type="text" id="buscador" placeholder="Buscar...">
+        <button onclick="fileInput.click()">IMPORTAR</button>
+        <button onclick="exportToExcel()">EXPORTAR</button>
+        <button onclick="window.location.href='form.html'">ADD</button>
+    </div>
+</div>
+
+<input type="file" id="fileInput" style="display:none" onchange="importExcel(event)">
+
+<table>
+<thead>
+<tr id="thead"></tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<div class="paginacion" id="paginacion"></div>
+
+</div>
+</div>
+
+
+<!-- ✅ 1) Cargar config.js (obligatorio porque aquí se usa config.tipo y config.campos) -->
+<script src="../Drivers/config.js"></script>
+
+<!-- ✅ 2) Script módulo: Firebase + lógica de tabla (sin localStorage) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+  import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+  // 🔹 TU CONFIG de Firebase (pon la completa, sin puntos suspensivos)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBDG...",
+    authDomain: "inventarios-5d199.firebaseapp.com",
+    databaseURL: "https://inventarios-5d199-default-rtdb.firebaseio.com",
+    projectId: "inventarios-5d199",
+    storageBucket: "inventarios-5d199.firebasestorage.app",
+    messagingSenderId: "140811884259",
+    appId: "1:140811884259:web:8e4ae4ecb760657779756"
+  };
+
+  // ✅ Inicializar Firebase + DB
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // ✅ Elementos UI
+  const thead = document.getElementById("thead");
+  const tbody = document.getElementById("tbody");
+  const buscador = document.getElementById("buscador");
+  const paginacion = document.getElementById("paginacion");
+  const titulo = document.getElementById("titulo");
+
+  // ✅ Estado
+  let registros = [];        // datos completos (desde Firebase)
+  let dataFiltrada = [];     // datos filtrados
+  let paginaActual = 1;
+  let filasPorPagina = 5;
+  let orden = { campo: null, asc: true };
+
+  // ✅ Título
+  if (titulo) titulo.innerText = "Listado de " + config.tipo;
+
+  // ✅ Construir encabezados (1 sola vez)
+  thead.innerHTML = "";
+  config.campos.forEach(campo => {
+    const th = document.createElement("th");
+    th.innerText = campo.label;
+    th.onclick = () => ordenar(campo.name);
+    thead.appendChild(th);
+  });
+  thead.innerHTML += "<th>Acciones</th>";
+
+  // ✅ Escuchar Firebase (tiempo real)
+  // onValue: se dispara al cargar y cada vez que cambia la data 【1-5a0ee8】
+  onValue(ref(db, config.tipo), (snapshot) => {
+    registros = [];
+
+    if (snapshot.exists()) {
+      snapshot.forEach(child => {
+        const item = child.val();
+        registros.push({
+          id: child.key,      // 🔥 ID real de Firebase (clave)
+          ...item
+        });
+      });
+    }
+
+    filtrar(); // recalcula dataFiltrada + render
+  });
+
+  // 🔍 Buscador
+  buscador.addEventListener("input", filtrar);
+
+  function filtrar() {
+    const texto = buscador.value.toLowerCase();
+
+    dataFiltrada = registros.filter(item =>
+      Object.values(item).some(v =>
+        String(v).toLowerCase().includes(texto)
+      )
+    );
+
+    paginaActual = 1;
+    render();
+  }
+
+  // ⬆️ Ordenar
+  function ordenar(campo) {
+    orden.asc = (orden.campo === campo) ? !orden.asc : true;
+    orden.campo = campo;
+
+    dataFiltrada.sort((a, b) => {
+      const A = a[campo] ?? "";
+      const B = b[campo] ?? "";
+      return orden.asc
+        ? String(A).localeCompare(String(B))
+        : String(B).localeCompare(String(A));
+    });
+
+    render();
+  }
+
+  // 📄 Render tabla + paginación
+  function render() {
+    tbody.innerHTML = "";
+
+    const inicio = (paginaActual - 1) * filasPorPagina;
+    const fin = inicio + filasPorPagina;
+    const pagina = dataFiltrada.slice(inicio, fin);
+
+    if (pagina.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="100%">No hay registros</td></tr>`;
+      paginacion.innerHTML = "";
+      return;
+    }
+
+    pagina.forEach(item => {
+      const tr = document.createElement("tr");
+
+      config.campos.forEach(campo => {
+        const td = document.createElement("td");
+        td.innerText = item[campo.name] ?? "";
+        tr.appendChild(td);
+      });
+
+      tr.innerHTML += `
+        <td>
+          <button onclick="editar('${item.id}')">✏️</button>
+          <button onclick="eliminar('${item.id}')">🗑️</button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    renderPaginacion();
+  }
+
+  function renderPaginacion() {
+    const total = Math.ceil(dataFiltrada.length / filasPorPagina);
+    paginacion.innerHTML = "";
+
+    for (let i = 1; i <= total; i++) {
+      const btn = document.createElement("button");
+      btn.innerText = i;
+      btn.onclick = () => { paginaActual = i; render(); };
+      paginacion.appendChild(btn);
+    }
+  }
+
+  // 🗑️ ELIMINAR (Firebase)
+  // Para borrar un nodo en RTDB puedes escribir null con set() 【1-5a0ee8】【2-df2696】
+  window.eliminar = async function(id) {
+    if (!confirm("Eliminar?")) return;
+
+    await set(ref(db, `${config.tipo}/${id}`), null);
+    // No hace falta filtrar() aquí porque onValue se dispara solo al cambiar la BD.
+  };
+
+  // ✏️ EDITAR (por ahora igual, guardas id en localStorage para abrir edit.html)
+  window.editar = function(id) {
+    localStorage.setItem("editId", id);
+    window.location.href = "edit.html";
+  };
+
+  // 📤 EXPORTAR (excel)
+  window.exportToExcel = function() {
+    // exportas lo que estás viendo (filtrado)
+    const ws = XLSX.utils.json_to_sheet(dataFiltrada.map(x => ({ ...x })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, "export.xlsx");
+  };
+
+  // 📥 IMPORTAR (excel) → guarda en Firebase con push() 【1-5a0ee8】
+  window.importExcel = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = async function(evt) {
+      const data = new Uint8Array(evt.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      let json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+      // Normaliza: deja solo columnas de config.campos
+      json = json.map(row => {
+        const limpio = {};
+        config.campos.forEach(c => limpio[c.name] = row[c.name] ?? row[c.label] ?? "");
+        return limpio;
+      });
+
+      // Inserta cada fila en Firebase
+      for (const item of json) {
+        await push(ref(db, config.tipo), item);
+      }
+
+      // onValue refresca solo
+      e.target.value = "";
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
+  // ✅ logout (para el menú)
+  window.logout = function() {
+    localStorage.removeItem("session");
+    window.location.href = "login.html";
+  };
+</script>
+
+
+</body>
+</html>

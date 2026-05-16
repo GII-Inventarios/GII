@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<title>Inicio</title>
+<link rel="stylesheet" href="../Estilos/styles.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    
+    <div>
+        <img class="logo" src="../Img/logo.png" alt="">
+    </div>
+
+    <div class="menu">
+        <a href="dashboard.html">INICIO</a>
+        <a href="index.html">REGISTROS</a>
+        <a href="login.html" onclick="logout()">CERRAR SESIÓN</a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="card">
+
+        <div class="header">
+            <h2>RESUMEN GENERAL</h2>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="resumen"></tbody>
+        </table>
+
+    </div>
+</div>
+
+<script src="../Drivers/config.js"></script>
+
+<!-- ✅ FIREBASE -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+// 🔥 CONFIG TUYA
+const firebaseConfig = {
+  apiKey: "AIzaSyBDG...",
+  authDomain: "inventarios-5d199.firebaseapp.com",
+  databaseURL: "https://inventarios-5d199-default-rtdb.firebaseio.com",
+  projectId: "inventarios-5d199",
+  storageBucket: "inventarios-5d199.firebasestorage.app",
+  messagingSenderId: "140811884259",
+  appId: "1:140811884259:web:8e4ae4ecb760657779756"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ✅ TABLA
+const resumen = document.getElementById("resumen");
+
+// ✅ ESCUCHAR DATOS EN TIEMPO REAL
+onValue(ref(db, config.tipo), (snapshot) => {
+
+    resumen.innerHTML = "";
+
+    let conteo = {};
+
+    if (!snapshot.exists()) return;
+
+    snapshot.forEach(child => {
+
+        let item = child.val();
+
+        let nombre = item.nombre || "Sin nombre";
+
+        if (!conteo[nombre]) {
+            conteo[nombre] = 0;
+        }
+
+        // 🔥 MISMA LÓGICA QUE TENÍAS
+        conteo[nombre] += item.cantidad ? parseInt(item.cantidad) : 1;
+    });
+
+    // ✅ MOSTRAR
+    for (let nombre in conteo) {
+        let tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${nombre}</td>
+            <td>${conteo[nombre]}</td>
+        `;
+
+        resumen.appendChild(tr);
+    }
+
+});
+
+// 🔐 LOGOUT
+window.logout = function(){
+    localStorage.removeItem("session");
+    window.location.href = "login.html";
+};
+
+</script>
+
+</body>
+</html>

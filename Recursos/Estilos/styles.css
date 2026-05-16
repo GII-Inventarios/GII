@@ -1,0 +1,173 @@
+/* RESET */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #111827, #1f2937);
+    display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:240px;
+    height:100vh;
+    background: linear-gradient(180deg, #111827, #1f2937);
+    position:fixed;
+    color:white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.4);
+}
+
+.logo{
+    height:90px;
+    margin:15px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.05);
+}
+
+/* MENU */
+.menu{
+    padding:15px;
+}
+
+.menu a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px;
+    margin-bottom:10px;
+    background: rgba(255,255,255,0.05);
+    border-radius:8px;
+    color:#9ca3af;
+    text-decoration:none;
+    font-size:14px;
+    transition: all 0.3s ease;
+}
+
+.menu a:hover{
+    background:#f59e0b;
+    color:black;
+    transform:translateX(5px);
+}
+
+/* MAIN */
+.main{
+    margin-left:240px;
+    width:100%;
+    padding:25px;
+}
+
+/* CARD */
+.card{
+    background:#1f2937;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    animation:fadeIn 0.4s ease;
+    color:white;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.header h2{
+    font-size:22px;
+    color:white;
+}
+
+/* BOTONES */
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:500;
+    transition:0.3s;
+}
+
+.btn-primary{
+    background:#f59e0b;
+    color:black;
+}
+
+.btn-primary:hover{
+    background:#d97706;
+}
+
+.btn-success{
+    background:#10b981;
+    color:white;
+}
+
+.btn-success:hover{
+    background:#059669;
+}
+
+/* FORM */
+.form-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+    gap:15px;
+}
+
+input{
+    padding:10px;
+    border:1px solid #374151;
+    border-radius:8px;
+    outline:none;
+    transition:0.3s;
+    background:#111827;
+    color:white;
+}
+
+input:focus{
+    border-color:#f59e0b;
+    box-shadow:0 0 5px rgba(245,158,11,0.4);
+}
+
+/* TABLA */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    overflow:hidden;
+    border-radius:10px;
+}
+
+th{
+    background:#f59e0b;
+    color:black;
+    padding:12px;
+    font-weight:600;
+}
+
+td{
+    padding:12px;
+    border-bottom:1px solid #374151;
+    text-align:center;
+    color:#e5e7eb;
+}
+
+tr:hover{
+    background:#374151;
+}
+
+/* ANIMACIONES */
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}

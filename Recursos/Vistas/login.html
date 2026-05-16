@@ -1,0 +1,50 @@
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<link rel="stylesheet" href="../Estilos/login.css">
+
+
+</head>
+
+<body>
+
+<div class="login-container">
+    <div class="login-box">
+        <h2>INICIAR SESIÓN</h2>
+        <input type="text" id="usuario" placeholder="Usuario">
+        <input type="password" id="password" placeholder="Contraseña">
+
+        <button class="btn-primary" onclick="login()">INGRESAR</button>
+
+    </div>
+</div>
+
+<script>
+if(!localStorage.getItem("usuarios")){
+    const usuarios = [
+        { user: "admin", pass: "1234" }
+    ];
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+}
+
+function login(){
+    const user = document.getElementById("usuario").value;
+    const pass = document.getElementById("password").value;
+
+    const usuarios = JSON.parse(localStorage.getItem("usuarios"));
+
+    const encontrado = usuarios.find(u => u.user === user && u.pass === pass);
+
+    if(encontrado){
+        localStorage.setItem("session", user);
+        window.location.href = "dashboard.html";
+    }else{
+        alert("Usuario o contraseña incorrectos");
+    }
+}
+</script>
+
+</body>
+</html>

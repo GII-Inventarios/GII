@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<script>
+if (!localStorage.getItem("session")) {
+    window.location.href = "login.html";
+}
+</script>
+
+<head>
+<meta charset="UTF-8">
+<title>Editar Registro</title>
+<link rel="stylesheet" href="../Estilos/styles.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div>
+        <img class="logo" src="../Img/logo.png" alt="">
+    </div>
+
+    <div class="menu">
+        <a href="dashboard.html">INICIO</a>
+        <a href="index.html">REGISTROS</a>
+        <a href="login.html" onclick="logout()">CERRAR SESIÓN</a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="card">
+
+        <div class="header">
+            <h2>Editar Registro</h2>
+        </div>
+
+        <form id="form" class="form-grid"></form>
+
+        <br>
+        <button type="button" class="btn-success" onclick="guardar()">ACTUALIZAR</button>
+
+    </div>
+</div>
+
+<script src="../Drivers/config.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+// 🔥 CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyBDG...",
+  authDomain: "inventarios-5d199.firebaseapp.com",
+  databaseURL: "https://inventarios-5d199-default-rtdb.firebaseio.com",
+  projectId: "inventarios-5d199",
+  storageBucket: "inventarios-5d199.firebasestorage.app",
+  messagingSenderId: "140811884259",
+  appId: "1:140811884259:web:8e4ae4ecb760657779756"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const form = document.getElementById("form");
+
+// ✅ ID desde localStorage (esto sí se mantiene)
+let editId = localStorage.getItem("editId");
+
+if (!editId) {
+    alert("No hay ID para editar");
+    window.location.href = "index.html";
+}
+
+// ✅ TRAER DATOS DESDE FIREBASE
+const snapshot = await get(ref(db, `${config.tipo}/${editId}`));
+
+if (!snapshot.exists()) {
+    alert("Registro no encontrado");
+    window.location.href = "index.html";
+}
+
+let data = snapshot.val();
+
+// 🧱 CREAR INPUTS (igual que tú)
+config.campos.forEach(campo => {
+
+    let div = document.createElement("div");
+
+    let label = document.createElement("label");
+    label.innerText = campo.label;
+
+    let input = document.createElement("input");
+    input.name = campo.name;
+    input.placeholder = campo.label;
+    input.value = data[campo.name] || "";
+
+    div.appendChild(label);
+    div.appendChild(input);
+
+    form.appendChild(div);
+});
+
+// ✅ ACTUALIZAR EN FIREBASE
+window.guardar = async function() {
+
+    let actualizado = {};
+    let valido = true;
+
+    config.campos.forEach(campo => {
+
+        let input = document.querySelector(`[name="${campo.name}"]`);
+        let valor = input.value.trim();
+
+        if (!valor) {
+            input.style.border = "1px solid red";
+            valido = false;
+        } else {
+            input.style.border = "";
+        }
+
+        actualizado[campo.name] = valor;
+    });
+
+    if (!valido) {
+        alert("Completa todos los campos");
+        return;
+    }
+
+    // 🔥 ACTUALIZAR EN FIREBASE (AQUÍ ESTÁ EL CAMBIO CLAVE)
+    await set(ref(db, `${config.tipo}/${editId}`), actualizado);
+
+    localStorage.removeItem("editId");
+
+    window.location.href = "index.html";
+};
+
+// 🔐 LOGOUT
+window.logout = function(){
+    localStorage.removeItem("session");
+    window.location.href = "login.html";
+};
+
+</script>
+
+</body>
+</html>
