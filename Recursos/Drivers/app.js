@@ -4,7 +4,7 @@ import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebas
 
 // 🔹 CONFIGURACIÓN DE FIREBASE (LA TUYA)
 const firebaseConfig = {
-  apiKey: "AIzaSyBDG...",
+  apiKey: "AIzaSyBDGiW7dmnu0TKgLkJa04zKoH0dyxV60NM",
   authDomain: "inventarios-5d199.firebaseapp.com",
   databaseURL: "https://inventarios-5d199-default-rtdb.firebaseio.com",
   projectId: "inventarios-5d199",
