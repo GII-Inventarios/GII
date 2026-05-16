@@ -50,83 +50,151 @@ if (!localStorage.getItem("session")) {
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
-// 🔥 CONFIG COMPLETA (NO CORTES APIKEY)
+import {
+    getDatabase,
+    ref,
+    push
+} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+// 🔥 CONFIG FIREBASE
 const firebaseConfig = {
-  apiKey: "AIzaSyBDGiW7dmnu0TKgLkJa04zKoH0dyxV60NM",
-  authDomain: "inventarios-5d199.firebaseapp.com",
-  databaseURL: "https://inventarios-5d199-default-rtdb.firebaseio.com",
-  projectId: "inventarios-5d199",
-  storageBucket: "inventarios-5d199.firebasestorage.app",
-  messagingSenderId: "140181884259",
-  appId: "1:140181884259:web:8e4ae4eecb760657779756",
-  measurementId: "G-X3860ML69E"
+
+    apiKey: "AIzaSyBDGiW7dmnu0TKgLkJa04zKoH0dyxV60NM",
+
+    authDomain: "inventarios-5d199.firebaseapp.com",
+
+    databaseURL: "https://inventarios-5d199-default-rtdb.firebaseio.com",
+
+    projectId: "inventarios-5d199",
+
+    storageBucket: "inventarios-5d199.firebasestorage.app",
+
+    messagingSenderId: "140181884259",
+
+    appId: "1:140181884259:web:8e4ae4eecb760657779756",
+
+    measurementId: "G-X3860ML69E"
 };
 
+// 🔥 INICIALIZAR FIREBASE
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
 
 // ✅ FORM
 const form = document.getElementById("form");
 
-// 🧱 INPUTS DINÁMICOS (TU LÓGICA)
+// ✅ VERIFICAR CONFIG
+if (!config || !config.campos || !config.tipo) {
+
+    console.error("CONFIG MAL DEFINIDA");
+
+    alert("Error en config.js");
+
+}
+
+// 🧱 CREAR INPUTS DINÁMICOS
 config.campos.forEach(campo => {
 
     let div = document.createElement("div");
 
     let label = document.createElement("label");
+
     label.innerText = campo.label;
 
     let input = document.createElement("input");
+
     input.name = campo.name;
+
     input.placeholder = campo.label;
 
     div.appendChild(label);
+
     div.appendChild(input);
 
     form.appendChild(div);
+
 });
 
-// ✅ GUARDAR (FIREBASE)
-window.guardar = function() {
+// ✅ GUARDAR EN FIREBASE
+window.guardar = async function () {
 
     let nuevo = {};
+
     let valido = true;
 
     config.campos.forEach(campo => {
 
-        let input = document.querySelector(`[name="${campo.name}"]`);
+        let input = document.querySelector(
+            `[name="${campo.name}"]`
+        );
+
         let valor = input.value.trim();
 
+        // ✅ VALIDACIÓN
         if (!valor) {
+
             input.style.border = "1px solid red";
+
             valido = false;
+
         } else {
+
             input.style.border = "";
+
         }
 
         nuevo[campo.name] = valor;
+
     });
 
+    // ❌ CAMPOS VACÍOS
     if (!valido) {
+
         alert("Completa todos los campos");
+
         return;
+
     }
 
-    // 🔥 GUARDA EN FIREBASE
-    push(ref(db, config.tipo), nuevo);
+    try {
 
-    // ✅ LIMPIEZA OPCIONAL
-    form.reset();
+        console.log("TIPO:", config.tipo);
 
-    window.location.href = "index.html";
+        console.log("DATOS:", nuevo);
+
+        // 🔥 INSERTAR EN FIREBASE
+        await push(
+            ref(db, config.tipo),
+            nuevo
+        );
+
+        alert("Registro guardado correctamente");
+
+        // ✅ LIMPIAR FORM
+        form.reset();
+
+        // ✅ REDIRECCIÓN
+        window.location.href = "index.html";
+
+    } catch (error) {
+
+        console.error("ERROR FIREBASE:", error);
+
+        alert("Error al guardar en Firebase");
+
+    }
+
 };
 
 // 🔐 LOGOUT
-window.logout = function(){
+window.logout = function () {
+
     localStorage.removeItem("session");
+
     window.location.href = "login.html";
+
 };
 
 </script>
