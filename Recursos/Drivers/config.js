@@ -1,5 +1,6 @@
+
 const config = {
-    tipo: "productos",
+    tipo: "inventarios", ✅
 
     campos: [
         { name: "nombre", label: "Nombre", type: "text" },
@@ -8,6 +9,5 @@ const config = {
         { name: "cantidad", label: "Cantidad", type: "number" }
     ],
 
-    // 🟢 IMPORTANTE: soporte para identificación única
     idField: "id"
 };
