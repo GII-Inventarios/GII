@@ -17,7 +17,8 @@ if (!localStorage.getItem("session")) {
 
 <div class="sidebar">
     <div>
-        <img class="logo" src="../Img/logo.png" alt="">
+        <!-- ✅ CORREGIDO -->
+        ../Img/logo.png
     </div>
 
     <div class="menu">
@@ -48,7 +49,7 @@ if (!localStorage.getItem("session")) {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
-// 🔥 CONFIG
+// 🔥 CONFIG COMPLETA (NO LA CORTES)
 const firebaseConfig = {
   apiKey: "AIzaSyBDG...",
   authDomain: "inventarios-5d199.firebaseapp.com",
@@ -64,16 +65,16 @@ const db = getDatabase(app);
 
 const form = document.getElementById("form");
 
-// ✅ ID desde localStorage (esto sí se mantiene)
+// ✅ ID para editar
 let editId = localStorage.getItem("editId");
 
 if (!editId) {
-    alert("No hay ID para editar");
+    alert("No hay registro seleccionado");
     window.location.href = "index.html";
 }
 
-// ✅ TRAER DATOS DESDE FIREBASE
-const snapshot = await get(ref(db, `${config.tipo}/${editId}`));
+// ✅ TRAER DATO DESDE FIREBASE
+let snapshot = await get(ref(db, `${config.tipo}/${editId}`));
 
 if (!snapshot.exists()) {
     alert("Registro no encontrado");
@@ -82,7 +83,7 @@ if (!snapshot.exists()) {
 
 let data = snapshot.val();
 
-// 🧱 CREAR INPUTS (igual que tú)
+// ✅ CREAR INPUTS (tu lógica intacta)
 config.campos.forEach(campo => {
 
     let div = document.createElement("div");
@@ -101,7 +102,7 @@ config.campos.forEach(campo => {
     form.appendChild(div);
 });
 
-// ✅ ACTUALIZAR EN FIREBASE
+// ✅ ACTUALIZAR
 window.guardar = async function() {
 
     let actualizado = {};
@@ -127,7 +128,7 @@ window.guardar = async function() {
         return;
     }
 
-    // 🔥 ACTUALIZAR EN FIREBASE (AQUÍ ESTÁ EL CAMBIO CLAVE)
+    // 🔥 ACTUALIZAR EN FIREBASE
     await set(ref(db, `${config.tipo}/${editId}`), actualizado);
 
     localStorage.removeItem("editId");
