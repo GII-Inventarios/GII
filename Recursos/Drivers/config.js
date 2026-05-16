@@ -1,4 +1,4 @@
-const config = {
+window.config = {
 
     tipo: "inventarios",
 
